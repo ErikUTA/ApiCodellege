@@ -21,12 +21,12 @@ exports.create = (req, res) => {
     img: req.body.img,
     aparicion: req.body.aparicion,
     casa: req.body.casa,
-    estado: "activo"
+    activo: true
   });
 
   heroe.save()
     .then((data) => {
-      res.send(data);
+      res.send({ msg: "Usuario agregado correctamente" });
     })
     .catch((err) => {
       res.status(500).send({ message: err.message || "Ocurrió un error." });
@@ -49,7 +49,7 @@ exports.create = (req, res) => {
   };
 
   exports.findOne = (req, res) => {
-    const id = parseInt(req.params.id);
+    const id = req.params.id;
 
     Heroe.findById(id)
       .then((data) => {
@@ -86,7 +86,7 @@ exports.create = (req, res) => {
   };
 
   exports.findActive = (req, res) => {
-    Heroe.find({ estado: "activo" })
+    Heroe.find({ activo: true })
       .then((data) => {
         res.send(data);
       })
@@ -102,7 +102,7 @@ exports.create = (req, res) => {
       msg:'La petición no puede ser vacía.'
     });
   }
-  const id= req.params.id;
+  const id = parseInt(req.params.id);
   Heroe.findByIdAndUpdate(id, req.body, {useFindAndModify: false})
   .then(data => {
     if (!data) {
@@ -121,10 +121,11 @@ exports.create = (req, res) => {
 
   // DELETE Operations:
   exports.delete = (req, res) => {
-    const id = req.params.id;
+    const id = parseInt(req.params.id);
+    console.log(id);
 
-    Heroe.findOneAndUpdate(id, {activo: false}, {
-    useFindAndModify: false})
+    Heroe.findByIdAndUpdate(id, { activo: false }, {
+    useFindAndModify: true})
     .then(data => {
       if (!data)
       res.status(404).send({
@@ -166,7 +167,31 @@ exports.create = (req, res) => {
     });
 
   }
-  
+
+  // PAGINATION
+  exports.pagination = async(req, res) => {
+    const { page = 1, limit = 3 } = req.query;
+    try {
+      // Ejecutar query con número de página y el limite de documentos
+      const heroes = await Heroe.find()
+        .limit(limit * 1)
+        .skip((page - 1) * limit)
+        .exec();
+      console.log(heroes);
+
+      // Obtener el total de documentos en la colección
+      const total = await Heroe.countDocuments();
+
+      // Enviar respuesta
+      res.json({
+        heroes,
+        totalPages: Math.ceil(total / limit),
+        currentPage: page
+      });
+    } catch (err) {
+      throwError(res, err);
+    }
+  }
 
   // Utilería:
   function throwError(res, err) {

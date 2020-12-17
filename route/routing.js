@@ -18,8 +18,11 @@ router.get("/heroesAct", heroes.findActive);
 // GET Agrupación
 router.get("/heroesGroup", heroes.grouping);
 
+// GET Paginación
+router.get("/heroesPag", heroes.pagination);
+
 // POST Heroe
-router.post("/heroe",heroes.create)
+router.post("/heroe",heroes.create);
 
 // DELETE Heroe:
 router.delete("/hero/:id", heroes.delete);
